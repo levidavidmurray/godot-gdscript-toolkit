@@ -12,7 +12,10 @@ from .statement_utils import format_simple_statement
 from .var_statement import format_var_statement
 from .expression_to_str import expression_to_str
 from .expression import format_concrete_expression
-from .annotation import format_standalone_annotation
+from .annotation import (
+    format_standalone_annotation,
+    format_annotation_to_string,
+)
 from .property import (
     has_inline_property_body,
     append_property_body_to_formatted_line,
@@ -166,11 +169,16 @@ def _format_func_statement(
     statement: Tree, context: Context, prefix: str = ""
 ) -> Outcome:
     func_header = statement.children[0]
+    offset = 1
+    if func_header.data == "annotation":
+        prefix = f"{format_annotation_to_string(func_header)}\n{prefix}"
+        func_header = statement.children[1]
+        offset = 2
     formatted_lines, last_processed_line_no = _format_func_header(
         func_header, context, prefix
     )
     func_lines, last_processed_line_no = format_block(
-        statement.children[1:],
+        statement.children[offset:],
         format_func_statement,
         context.create_child_context(last_processed_line_no),
     )

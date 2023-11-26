@@ -9,11 +9,12 @@ from .expression import format_concrete_expression
 from .expression_to_str import expression_to_str
 
 STANDALONE_ANNOTATIONS = [
+    "tool",
+    "icon",
+    "static_unload",
     "export_category",
     "export_group",
     "export_subgroup",
-    "icon",
-    "tool",
     "warning_ignore",
 ]
 

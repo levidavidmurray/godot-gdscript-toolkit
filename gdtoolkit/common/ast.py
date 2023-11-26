@@ -87,6 +87,8 @@ class Function(Statement):
 
     def _load_data_from_func_def(self, func_def: Tree) -> None:
         func_header = func_def.children[0]
+        if func_header.data == "annotation":
+            func_header = func_def.children[1]
         name_token = find_name_token_among_children(func_header)
         self.name = name_token.value  # type: ignore
         func_args = find_tree_among_children("func_args", func_header)
