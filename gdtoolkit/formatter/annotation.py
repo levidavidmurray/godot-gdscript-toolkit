@@ -17,6 +17,12 @@ STANDALONE_ANNOTATIONS = [
     "warning_ignore",
 ]
 
+# Keep annotation on line above statement it's associated with,
+# instead of prepending
+ASSOCIATED_STANDALONE_ANNOTATIONS = [
+    "rpc"
+]
+
 
 def is_non_standalone_annotation(statement: Tree) -> bool:
     if statement.data != "annotation":
@@ -25,10 +31,23 @@ def is_non_standalone_annotation(statement: Tree) -> bool:
     return name not in STANDALONE_ANNOTATIONS
 
 
+def is_associated_standalone_annotation(statement: Tree) -> bool:
+    if statement.data != "annotation":
+        return False
+    name = statement.children[0].value
+    return name in ASSOCIATED_STANDALONE_ANNOTATIONS
+
+
 def prepend_annotations_to_formatted_line(
     line_to_prepend_to: FormattedLine, context: Context
 ) -> FormattedLines:
     assert len(context.annotations) > 0
+    has_associated_annotations = False
+    for annotation in context.annotations:
+        if is_associated_standalone_annotation(annotation):
+            has_associated_annotations = True
+            break
+
     whitelineless_line = line_to_prepend_to[1].strip()
     annotations_string = " ".join(
         [format_annotation_to_string(annotation) for annotation in context.annotations]
@@ -37,7 +56,8 @@ def prepend_annotations_to_formatted_line(
         context.indent + len(annotations_string) + len(whitelineless_line)
     )
     if (
-        not _annotations_have_standalone_comments(
+        not has_associated_annotations
+        and not _annotations_have_standalone_comments(
             context.annotations, context.standalone_comments, line_to_prepend_to[0]
         )
         and single_line_length <= context.max_line_length
